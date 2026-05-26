@@ -5,7 +5,8 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
 
 @SpringBootApplication
 @RestController
@@ -14,6 +15,11 @@ public class Demo1Application {
 
     public static void main(String[] args) {
         SpringApplication.run(Demo1Application.class, args);
+    }
+
+    @GetMapping("/health")
+    public String health() {
+        return "OK";
     }
 
     @PostMapping
@@ -25,7 +31,8 @@ public class Demo1Application {
         List<String> specialCharacters = new ArrayList<>();
 
         int sum = 0;
-        StringBuilder allAlphabets = new StringBuilder();
+
+        StringBuilder alphabetString = new StringBuilder();
 
         for (String item : request.getData()) {
 
@@ -44,7 +51,8 @@ public class Demo1Application {
             } else if (item.matches("[a-zA-Z]+")) {
 
                 alphabets.add(item.toUpperCase());
-                allAlphabets.append(item);
+
+                alphabetString.append(item);
 
             } else {
 
@@ -52,7 +60,7 @@ public class Demo1Application {
             }
         }
 
-        String concatString = buildConcatString(allAlphabets.toString());
+        String concatString = createConcatString(alphabetString.toString());
 
         ResponseDTO response = new ResponseDTO();
 
@@ -72,7 +80,7 @@ public class Demo1Application {
         return ResponseEntity.ok(response);
     }
 
-    private String buildConcatString(String input) {
+    private String createConcatString(String input) {
 
         String reversed = new StringBuilder(input).reverse().toString();
 
@@ -109,16 +117,23 @@ class RequestDTO {
 class ResponseDTO {
 
     private boolean is_success;
+
     private String user_id;
+
     private String email;
+
     private String roll_number;
 
     private List<String> odd_numbers;
+
     private List<String> even_numbers;
+
     private List<String> alphabets;
+
     private List<String> special_characters;
 
     private String sum;
+
     private String concat_string;
 
     public boolean isIs_success() {
