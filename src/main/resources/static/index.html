@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BFHL API — Yogita Gurjar</title>
+    <meta name="description" content="Bajaj Finserv Health Developer Challenge API by Yogita Gurjar — 0827CD231078">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+        :root {
+            --bg: #0a0a0f;
+            --surface: rgba(255,255,255,0.04);
+            --surface-hover: rgba(255,255,255,0.07);
+            --border: rgba(255,255,255,0.08);
+            --text: #e4e4e7;
+            --text-muted: #71717a;
+            --accent: #818cf8;
+            --accent-glow: rgba(129,140,248,0.25);
+            --green: #34d399;
+            --green-glow: rgba(52,211,153,0.2);
+            --amber: #fbbf24;
+        }
+
+        body {
+            font-family: 'Outfit', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            overflow-x: hidden;
+            line-height: 1.6;
+        }
+
+        /* Animated background orbs */
+        .bg-orbs {
+            position: fixed; inset: 0; z-index: 0; pointer-events: none; overflow: hidden;
+        }
+        .bg-orbs .orb {
+            position: absolute; border-radius: 50%; filter: blur(100px); opacity: 0.3;
+            animation: float 20s ease-in-out infinite;
+        }
+        .bg-orbs .orb:nth-child(1) {
+            width: 600px; height: 600px; background: var(--accent);
+            top: -200px; left: -100px; animation-delay: 0s;
+        }
+        .bg-orbs .orb:nth-child(2) {
+            width: 500px; height: 500px; background: #a78bfa;
+            bottom: -150px; right: -100px; animation-delay: -7s;
+        }
+        .bg-orbs .orb:nth-child(3) {
+            width: 400px; height: 400px; background: #6366f1;
+            top: 50%; left: 50%; transform: translate(-50%, -50%);
+            animation-delay: -14s;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translate(0, 0) scale(1); }
+            25% { transform: translate(30px, -40px) scale(1.05); }
+            50% { transform: translate(-20px, 20px) scale(0.95); }
+            75% { transform: translate(40px, 30px) scale(1.02); }
+        }
+
+        /* Layout */
+        .container {
+            position: relative; z-index: 1;
+            max-width: 900px; margin: 0 auto;
+            padding: 40px 24px 80px;
+        }
+
+        /* Header */
+        .header {
+            text-align: center; margin-bottom: 48px;
+        }
+        .status-chip {
+            display: inline-flex; align-items: center; gap: 8px;
+            padding: 6px 16px; border-radius: 100px;
+            background: var(--green-glow); border: 1px solid rgba(52,211,153,0.3);
+            font-size: 13px; font-weight: 500; color: var(--green);
+            margin-bottom: 20px;
+            animation: pulse-border 3s ease-in-out infinite;
+        }
+        .status-chip .dot {
+            width: 8px; height: 8px; border-radius: 50%;
+            background: var(--green);
+            animation: pulse-dot 2s ease-in-out infinite;
+        }
+        @keyframes pulse-dot {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.5; transform: scale(0.8); }
+        }
+        @keyframes pulse-border {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(52,211,153,0.15); }
+            50% { box-shadow: 0 0 0 6px rgba(52,211,153,0); }
+        }
+
+        h1 {
+            font-size: clamp(2rem, 5vw, 3.2rem);
+            font-weight: 800;
+            letter-spacing: -1px;
+            background: linear-gradient(135deg, #e4e4e7 0%, #818cf8 50%, #a78bfa 100%);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 8px;
+        }
+        .subtitle {
+            font-size: 16px; color: var(--text-muted); font-weight: 400;
+        }
+
+        /* Cards */
+        .card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 28px;
+            margin-bottom: 20px;
+            backdrop-filter: blur(12px);
+            transition: background 0.3s, border-color 0.3s, transform 0.2s;
+        }
+        .card:hover {
+            background: var(--surface-hover);
+            border-color: rgba(255,255,255,0.12);
+            transform: translateY(-2px);
+        }
+        .card-title {
+            font-size: 12px; font-weight: 600;
+            text-transform: uppercase; letter-spacing: 1.5px;
+            color: var(--text-muted); margin-bottom: 16px;
+        }
+
+        /* Info grid */
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+        }
+        .info-item label {
+            display: block; font-size: 12px; color: var(--text-muted);
+            font-weight: 500; margin-bottom: 4px;
+        }
+        .info-item span {
+            font-size: 15px; font-weight: 600; color: var(--text);
+        }
+        .info-item .mono {
+            font-family: 'JetBrains Mono', 'Fira Code', monospace;
+            color: var(--accent); font-size: 14px;
+        }
+
+        /* API Endpoints */
+        .endpoint {
+            display: flex; align-items: center; gap: 12px;
+            padding: 14px 18px; border-radius: 10px;
+            background: rgba(255,255,255,0.02);
+            border: 1px solid var(--border);
+            margin-bottom: 10px;
+            transition: all 0.25s;
+        }
+        .endpoint:hover {
+            background: rgba(129,140,248,0.06);
+            border-color: rgba(129,140,248,0.2);
+        }
+        .method {
+            padding: 4px 10px; border-radius: 6px;
+            font-size: 11px; font-weight: 700;
+            letter-spacing: 0.5px; flex-shrink: 0;
+        }
+        .method.get {
+            background: rgba(52,211,153,0.15); color: var(--green);
+            border: 1px solid rgba(52,211,153,0.25);
+        }
+        .method.post {
+            background: rgba(129,140,248,0.15); color: var(--accent);
+            border: 1px solid rgba(129,140,248,0.25);
+        }
+        .path {
+            font-family: 'JetBrains Mono', 'Fira Code', monospace;
+            font-size: 14px; font-weight: 500; color: var(--text);
+        }
+        .endpoint-desc {
+            margin-left: auto; font-size: 13px; color: var(--text-muted);
+        }
+
+        /* Code block */
+        .code-block {
+            position: relative;
+            background: rgba(0,0,0,0.4);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            overflow: hidden;
+        }
+        .code-header {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 10px 16px;
+            background: rgba(255,255,255,0.03);
+            border-bottom: 1px solid var(--border);
+        }
+        .code-header span {
+            font-size: 12px; color: var(--text-muted); font-weight: 500;
+        }
+        .copy-btn {
+            padding: 4px 12px; border-radius: 6px;
+            background: rgba(129,140,248,0.1); border: 1px solid rgba(129,140,248,0.2);
+            color: var(--accent); font-size: 12px; font-weight: 500;
+            cursor: pointer; transition: all 0.2s;
+            font-family: 'Outfit', sans-serif;
+        }
+        .copy-btn:hover {
+            background: rgba(129,140,248,0.2);
+        }
+        .code-body {
+            padding: 16px 20px;
+            overflow-x: auto;
+        }
+        .code-body pre {
+            font-family: 'JetBrains Mono', 'Fira Code', monospace;
+            font-size: 13px; line-height: 1.7;
+            color: #c4b5fd; white-space: pre;
+        }
+
+        /* Footer */
+        .footer {
+            text-align: center; margin-top: 40px;
+            font-size: 13px; color: var(--text-muted);
+        }
+        .footer a {
+            color: var(--accent); text-decoration: none;
+            transition: color 0.2s;
+        }
+        .footer a:hover { color: #a5b4fc; }
+
+        /* Animations */
+        .fade-up {
+            opacity: 0; transform: translateY(20px);
+            animation: fadeUp 0.6s ease forwards;
+        }
+        .fade-up:nth-child(2) { animation-delay: 0.1s; }
+        .fade-up:nth-child(3) { animation-delay: 0.2s; }
+        .fade-up:nth-child(4) { animation-delay: 0.3s; }
+        .fade-up:nth-child(5) { animation-delay: 0.4s; }
+
+        @keyframes fadeUp {
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Responsive */
+        @media (max-width: 600px) {
+            .container { padding: 24px 16px 60px; }
+            .card { padding: 20px; }
+            .endpoint { flex-wrap: wrap; gap: 8px; }
+            .endpoint-desc { margin-left: 0; }
+            .info-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <div class="bg-orbs">
+        <div class="orb"></div>
+        <div class="orb"></div>
+        <div class="orb"></div>
+    </div>
+
+    <div class="container">
+        <!-- Header -->
+        <div class="header fade-up">
+            <div class="status-chip">
+                <div class="dot"></div>
+                Service Online
+            </div>
+            <h1>BFHL REST API</h1>
+            <p class="subtitle">Bajaj Finserv Health — Developer Hiring Challenge</p>
+        </div>
+
+        <!-- Candidate Info -->
+        <div class="card fade-up">
+            <div class="card-title">Candidate Information</div>
+            <div class="info-grid">
+                <div class="info-item">
+                    <label>Name</label>
+                    <span>Yogita Gurjar</span>
+                </div>
+                <div class="info-item">
+                    <label>Registration No.</label>
+                    <span class="mono">0827CD231078</span>
+                </div>
+                <div class="info-item">
+                    <label>Email</label>
+                    <span>yogitagurjar230840@acropolis.in</span>
+                </div>
+                <div class="info-item">
+                    <label>User ID</label>
+                    <span class="mono">yogita_gurjar_15082006</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- API Endpoints -->
+        <div class="card fade-up">
+            <div class="card-title">API Endpoints</div>
+            <div class="endpoint">
+                <span class="method get">GET</span>
+                <span class="path">/bfhl/health</span>
+                <span class="endpoint-desc">Health check</span>
+            </div>
+            <div class="endpoint">
+                <span class="method post">POST</span>
+                <span class="path">/bfhl</span>
+                <span class="endpoint-desc">Process data — numbers, alphabets & special chars</span>
+            </div>
+        </div>
+
+        <!-- Sample Request -->
+        <div class="card fade-up">
+            <div class="card-title">Sample Request</div>
+            <div class="code-block">
+                <div class="code-header">
+                    <span>POST /bfhl</span>
+                    <button class="copy-btn" onclick="copyCode('req')">Copy</button>
+                </div>
+                <div class="code-body">
+                    <pre id="req">{
+  "data": ["A", "1", "B", "2", "z", "!"]
+}</pre>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sample Response -->
+        <div class="card fade-up">
+            <div class="card-title">Sample Response</div>
+            <div class="code-block">
+                <div class="code-header">
+                    <span>200 OK</span>
+                    <button class="copy-btn" onclick="copyCode('res')">Copy</button>
+                </div>
+                <div class="code-body">
+                    <pre id="res">{
+  "is_success": true,
+  "user_id": "yogita_gurjar_15082006",
+  "email": "yogitagurjar230840@acropolis.in",
+  "roll_number": "0827CD231078",
+  "odd_numbers": ["1"],
+  "even_numbers": ["2"],
+  "alphabets": ["A", "B", "Z"],
+  "special_characters": ["!"],
+  "sum": "3",
+  "concat_string": "ZBA"
+}</pre>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="footer fade-up">
+            <p>Built with Spring Boot 4.0 &bull; Java 21 &bull; Deployed on <a href="https://railway.app" target="_blank">Railway</a></p>
+        </div>
+    </div>
+
+    <script>
+        function copyCode(id) {
+            const text = document.getElementById(id).textContent;
+            navigator.clipboard.writeText(text).then(() => {
+                const btn = event.target;
+                btn.textContent = 'Copied!';
+                setTimeout(() => btn.textContent = 'Copy', 1500);
+            });
+        }
+    </script>
+</body>
+</html>
